@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, Circle } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/roadmap/$itemId")({
+export const Route = createFileRoute("/_authenticated/roadmap/item/$itemId")({
   head: () => ({ meta: [{ title: "Roadmap step — PathFinder" }] }),
   component: ItemDetail,
 });
