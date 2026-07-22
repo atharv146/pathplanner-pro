@@ -82,6 +82,7 @@ export type Database = {
           grade_level: number | null
           id: string
           immigration_status: string | null
+          language_at_home: string | null
           onboarding_complete: boolean
           target_college: string | null
           target_major: string | null
@@ -99,6 +100,7 @@ export type Database = {
           grade_level?: number | null
           id: string
           immigration_status?: string | null
+          language_at_home?: string | null
           onboarding_complete?: boolean
           target_college?: string | null
           target_major?: string | null
@@ -116,6 +118,7 @@ export type Database = {
           grade_level?: number | null
           id?: string
           immigration_status?: string | null
+          language_at_home?: string | null
           onboarding_complete?: boolean
           target_college?: string | null
           target_major?: string | null

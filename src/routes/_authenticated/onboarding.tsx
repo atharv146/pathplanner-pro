@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,13 @@ function Onboarding() {
   const { userId } = Route.useRouteContext();
   const navigate = useNavigate();
   const qc = useQueryClient();
+
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ["profile", userId],
+    queryFn: async () => (await supabase.from("profiles").select("*").eq("id", userId).maybeSingle()).data,
+  });
+  const isParent = profile?.account_type === "parent";
+
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({
     grade_level: 9,
@@ -35,26 +42,32 @@ function Onboarding() {
     test_scores: "",
     first_gen: false,
     immigration_status: "",
+    language_at_home: "",
   });
   const [saving, setSaving] = useState(false);
 
   async function save() {
     setSaving(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        grade_level: form.grade_level,
-        target_major: form.undecided ? null : form.target_major || null,
-        target_college: form.undecided ? null : form.target_college || null,
-        undecided: form.undecided,
-        gpa: form.gpa ? Number(form.gpa) : null,
-        extracurriculars: form.extracurriculars || null,
-        test_scores: form.test_scores || null,
-        first_gen: form.first_gen,
-        immigration_status: form.immigration_status || null,
-        onboarding_complete: true,
-      })
-      .eq("id", userId);
+    const gpaNum = form.gpa && !isNaN(Number(form.gpa)) ? Number(form.gpa) : null;
+    const base = {
+      grade_level: form.grade_level,
+      target_major: form.undecided ? null : form.target_major || null,
+      target_college: form.undecided ? null : form.target_college || null,
+      undecided: form.undecided,
+      first_gen: form.first_gen,
+      language_at_home: form.language_at_home || null,
+      onboarding_complete: true,
+    };
+    const payload = isParent
+      ? base
+      : {
+          ...base,
+          gpa: gpaNum,
+          extracurriculars: form.extracurriculars || null,
+          test_scores: form.test_scores || null,
+          immigration_status: form.immigration_status || null,
+        };
+    const { error } = await supabase.from("profiles").update(payload).eq("id", userId);
     setSaving(false);
     if (error) return toast.error(error.message);
     await qc.invalidateQueries({ queryKey: ["profile", userId] });
@@ -62,10 +75,10 @@ function Onboarding() {
     navigate({ to: "/roadmap" });
   }
 
-  const steps = [
+  const studentSteps = [
     {
       title: "What grade are you in?",
-      subtitle: "Parents — pick your student's grade.",
+      subtitle: "Pick your current grade.",
       body: (
         <div className="grid grid-cols-4 gap-2">
           {[6, 7, 8, 9, 10, 11, 12].map((g) => (
@@ -116,15 +129,15 @@ function Onboarding() {
         <div className="space-y-4">
           <div>
             <Label htmlFor="gpa">Current GPA</Label>
-            <Input id="gpa" type="number" step="0.01" min="0" max="5" value={form.gpa} onChange={(e) => setForm({ ...form, gpa: e.target.value })} placeholder="e.g. 3.8" className="mt-1.5 h-11 rounded-xl" />
+            <Input id="gpa" type="text" inputMode="decimal" value={form.gpa} onChange={(e) => setForm({ ...form, gpa: e.target.value })} placeholder="Not sure yet? Type N/A" className="mt-1.5 h-11 rounded-xl" />
           </div>
           <div>
             <Label htmlFor="tests">Test scores</Label>
-            <Textarea id="tests" value={form.test_scores} onChange={(e) => setForm({ ...form, test_scores: e.target.value })} placeholder="SAT 1420, PSAT 1310, AP Calc 5…" className="mt-1.5 rounded-xl min-h-[80px]" />
+            <Textarea id="tests" value={form.test_scores} onChange={(e) => setForm({ ...form, test_scores: e.target.value })} placeholder="Not sure yet? Type N/A" className="mt-1.5 rounded-xl min-h-[80px]" />
           </div>
           <div>
             <Label htmlFor="ecs">Extracurriculars</Label>
-            <Textarea id="ecs" value={form.extracurriculars} onChange={(e) => setForm({ ...form, extracurriculars: e.target.value })} placeholder="Debate team captain, robotics club, volunteer tutor…" className="mt-1.5 rounded-xl min-h-[100px]" />
+            <Textarea id="ecs" value={form.extracurriculars} onChange={(e) => setForm({ ...form, extracurriculars: e.target.value })} placeholder="Not sure yet? Type N/A" className="mt-1.5 rounded-xl min-h-[100px]" />
           </div>
         </div>
       ),
@@ -145,10 +158,88 @@ function Onboarding() {
             <Label htmlFor="imm">Immigration status (optional)</Label>
             <Input id="imm" value={form.immigration_status} onChange={(e) => setForm({ ...form, immigration_status: e.target.value })} placeholder="e.g. US citizen, international, DACA" className="mt-1.5 h-11 rounded-xl" />
           </div>
+          <div>
+            <Label htmlFor="lang">Language spoken at home (optional)</Label>
+            <Input id="lang" value={form.language_at_home} onChange={(e) => setForm({ ...form, language_at_home: e.target.value })} placeholder="e.g. English, Spanish, Mandarin" className="mt-1.5 h-11 rounded-xl" />
+          </div>
         </div>
       ),
     },
   ];
+
+  const parentSteps = [
+    {
+      title: "What grade is your student in?",
+      subtitle: "Pick their current grade.",
+      body: (
+        <div className="grid grid-cols-4 gap-2">
+          {[6, 7, 8, 9, 10, 11, 12].map((g) => (
+            <button
+              key={g}
+              type="button"
+              onClick={() => setForm({ ...form, grade_level: g })}
+              className={`aspect-square rounded-2xl border-2 text-lg font-bold transition ${
+                form.grade_level === g
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card hover:border-primary/40"
+              }`}
+            >
+              {g}
+            </button>
+          ))}
+        </div>
+      ),
+    },
+    {
+      title: "Where is your student headed?",
+      subtitle: "It's okay if they haven't decided yet.",
+      body: (
+        <div className="space-y-4">
+          <label className="flex items-center gap-3 p-4 rounded-2xl border-2 border-border bg-card cursor-pointer">
+            <Checkbox checked={form.undecided} onCheckedChange={(v) => setForm({ ...form, undecided: !!v })} />
+            <span className="font-medium">Still exploring</span>
+          </label>
+          {!form.undecided && (
+            <>
+              <div>
+                <Label htmlFor="major">Target major or field</Label>
+                <Input id="major" value={form.target_major} onChange={(e) => setForm({ ...form, target_major: e.target.value })} placeholder="e.g. Computer Science" className="mt-1.5 h-11 rounded-xl" />
+              </div>
+              <div>
+                <Label htmlFor="college">Dream college (optional)</Label>
+                <Input id="college" value={form.target_college} onChange={(e) => setForm({ ...form, target_college: e.target.value })} placeholder="e.g. UCLA" className="mt-1.5 h-11 rounded-xl" />
+              </div>
+            </>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: "A few final things",
+      subtitle: "Optional — this helps us give better guidance.",
+      body: (
+        <div className="space-y-4">
+          <label className="flex items-start gap-3 p-4 rounded-2xl border-2 border-border bg-card cursor-pointer">
+            <Checkbox checked={form.first_gen} onCheckedChange={(v) => setForm({ ...form, first_gen: !!v })} className="mt-0.5" />
+            <div>
+              <div className="font-medium">My student will be a first-generation college student</div>
+              <div className="text-sm text-muted-foreground">Unlocks tailored resources and support.</div>
+            </div>
+          </label>
+          <div>
+            <Label htmlFor="lang">Language spoken at home (optional)</Label>
+            <Input id="lang" value={form.language_at_home} onChange={(e) => setForm({ ...form, language_at_home: e.target.value })} placeholder="e.g. English, Spanish, Mandarin" className="mt-1.5 h-11 rounded-xl" />
+          </div>
+        </div>
+      ),
+    },
+  ];
+
+  const steps = isParent ? parentSteps : studentSteps;
+
+  if (profileLoading) {
+    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading…</div>;
+  }
 
   const current = steps[step];
   const last = step === steps.length - 1;

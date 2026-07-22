@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, Circle } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/roadmap/$itemId")({
+export const Route = createFileRoute("/_authenticated/roadmap/item/$itemId")({
   head: () => ({ meta: [{ title: "Roadmap step — PathFinder" }] }),
   component: ItemDetail,
 });
@@ -59,8 +59,8 @@ function ItemDetail() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="gradient-hero px-5 pt-6 pb-10">
-        <button onClick={() => navigate({ to: "/roadmap" })} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-6">
-          <ArrowLeft className="w-4 h-4" /> Back to roadmap
+        <button onClick={() => navigate({ to: "/roadmap/$grade", params: { grade: String(item.grade) } })} className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-6">
+          <ArrowLeft className="w-4 h-4" /> Back to grade {item.grade}
         </button>
         <div className="text-[11px] font-bold uppercase tracking-wide text-primary mb-2">
           Grade {item.grade} · {item.category}

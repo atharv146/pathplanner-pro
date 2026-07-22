@@ -12,11 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedRoadmapRouteImport } from './routes/_authenticated/roadmap'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedGuideRouteImport } from './routes/_authenticated/guide'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
-import { Route as AuthenticatedRoadmapItemIdRouteImport } from './routes/_authenticated/roadmap.$itemId'
+import { Route as AuthenticatedRoadmapIndexRouteImport } from './routes/_authenticated/roadmap.index'
+import { Route as AuthenticatedRoadmapGradeRouteImport } from './routes/_authenticated/roadmap.$grade'
+import { Route as AuthenticatedRoadmapItemItemIdRouteImport } from './routes/_authenticated/roadmap.item.$itemId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -31,11 +32,6 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRoadmapRoute = AuthenticatedRoadmapRouteImport.update({
-  id: '/roadmap',
-  path: '/roadmap',
-  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   id: '/onboarding',
@@ -52,11 +48,23 @@ const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedRoadmapItemIdRoute =
-  AuthenticatedRoadmapItemIdRouteImport.update({
-    id: '/$itemId',
-    path: '/$itemId',
-    getParentRoute: () => AuthenticatedRoadmapRoute,
+const AuthenticatedRoadmapIndexRoute =
+  AuthenticatedRoadmapIndexRouteImport.update({
+    id: '/roadmap/',
+    path: '/roadmap/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedRoadmapGradeRoute =
+  AuthenticatedRoadmapGradeRouteImport.update({
+    id: '/roadmap/$grade',
+    path: '/roadmap/$grade',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedRoadmapItemItemIdRoute =
+  AuthenticatedRoadmapItemItemIdRouteImport.update({
+    id: '/roadmap/item/$itemId',
+    path: '/roadmap/item/$itemId',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -65,8 +73,9 @@ export interface FileRoutesByFullPath {
   '/chat': typeof AuthenticatedChatRoute
   '/guide': typeof AuthenticatedGuideRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
-  '/roadmap': typeof AuthenticatedRoadmapRouteWithChildren
-  '/roadmap/$itemId': typeof AuthenticatedRoadmapItemIdRoute
+  '/roadmap/$grade': typeof AuthenticatedRoadmapGradeRoute
+  '/roadmap/': typeof AuthenticatedRoadmapIndexRoute
+  '/roadmap/item/$itemId': typeof AuthenticatedRoadmapItemItemIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -74,8 +83,9 @@ export interface FileRoutesByTo {
   '/chat': typeof AuthenticatedChatRoute
   '/guide': typeof AuthenticatedGuideRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
-  '/roadmap': typeof AuthenticatedRoadmapRouteWithChildren
-  '/roadmap/$itemId': typeof AuthenticatedRoadmapItemIdRoute
+  '/roadmap/$grade': typeof AuthenticatedRoadmapGradeRoute
+  '/roadmap': typeof AuthenticatedRoadmapIndexRoute
+  '/roadmap/item/$itemId': typeof AuthenticatedRoadmapItemItemIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -85,8 +95,9 @@ export interface FileRoutesById {
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/_authenticated/guide': typeof AuthenticatedGuideRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
-  '/_authenticated/roadmap': typeof AuthenticatedRoadmapRouteWithChildren
-  '/_authenticated/roadmap/$itemId': typeof AuthenticatedRoadmapItemIdRoute
+  '/_authenticated/roadmap/$grade': typeof AuthenticatedRoadmapGradeRoute
+  '/_authenticated/roadmap/': typeof AuthenticatedRoadmapIndexRoute
+  '/_authenticated/roadmap/item/$itemId': typeof AuthenticatedRoadmapItemItemIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -96,8 +107,9 @@ export interface FileRouteTypes {
     | '/chat'
     | '/guide'
     | '/onboarding'
-    | '/roadmap'
-    | '/roadmap/$itemId'
+    | '/roadmap/$grade'
+    | '/roadmap/'
+    | '/roadmap/item/$itemId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -105,8 +117,9 @@ export interface FileRouteTypes {
     | '/chat'
     | '/guide'
     | '/onboarding'
+    | '/roadmap/$grade'
     | '/roadmap'
-    | '/roadmap/$itemId'
+    | '/roadmap/item/$itemId'
   id:
     | '__root__'
     | '/'
@@ -115,8 +128,9 @@ export interface FileRouteTypes {
     | '/_authenticated/chat'
     | '/_authenticated/guide'
     | '/_authenticated/onboarding'
-    | '/_authenticated/roadmap'
-    | '/_authenticated/roadmap/$itemId'
+    | '/_authenticated/roadmap/$grade'
+    | '/_authenticated/roadmap/'
+    | '/_authenticated/roadmap/item/$itemId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -148,13 +162,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/roadmap': {
-      id: '/_authenticated/roadmap'
-      path: '/roadmap'
-      fullPath: '/roadmap'
-      preLoaderRoute: typeof AuthenticatedRoadmapRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/onboarding': {
       id: '/_authenticated/onboarding'
       path: '/onboarding'
@@ -176,39 +183,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChatRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/roadmap/$itemId': {
-      id: '/_authenticated/roadmap/$itemId'
-      path: '/$itemId'
-      fullPath: '/roadmap/$itemId'
-      preLoaderRoute: typeof AuthenticatedRoadmapItemIdRouteImport
-      parentRoute: typeof AuthenticatedRoadmapRoute
+    '/_authenticated/roadmap/': {
+      id: '/_authenticated/roadmap/'
+      path: '/roadmap'
+      fullPath: '/roadmap/'
+      preLoaderRoute: typeof AuthenticatedRoadmapIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/roadmap/$grade': {
+      id: '/_authenticated/roadmap/$grade'
+      path: '/roadmap/$grade'
+      fullPath: '/roadmap/$grade'
+      preLoaderRoute: typeof AuthenticatedRoadmapGradeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/roadmap/item/$itemId': {
+      id: '/_authenticated/roadmap/item/$itemId'
+      path: '/roadmap/item/$itemId'
+      fullPath: '/roadmap/item/$itemId'
+      preLoaderRoute: typeof AuthenticatedRoadmapItemItemIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
-
-interface AuthenticatedRoadmapRouteChildren {
-  AuthenticatedRoadmapItemIdRoute: typeof AuthenticatedRoadmapItemIdRoute
-}
-
-const AuthenticatedRoadmapRouteChildren: AuthenticatedRoadmapRouteChildren = {
-  AuthenticatedRoadmapItemIdRoute: AuthenticatedRoadmapItemIdRoute,
-}
-
-const AuthenticatedRoadmapRouteWithChildren =
-  AuthenticatedRoadmapRoute._addFileChildren(AuthenticatedRoadmapRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
   AuthenticatedGuideRoute: typeof AuthenticatedGuideRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
-  AuthenticatedRoadmapRoute: typeof AuthenticatedRoadmapRouteWithChildren
+  AuthenticatedRoadmapGradeRoute: typeof AuthenticatedRoadmapGradeRoute
+  AuthenticatedRoadmapIndexRoute: typeof AuthenticatedRoadmapIndexRoute
+  AuthenticatedRoadmapItemItemIdRoute: typeof AuthenticatedRoadmapItemItemIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChatRoute: AuthenticatedChatRoute,
   AuthenticatedGuideRoute: AuthenticatedGuideRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
-  AuthenticatedRoadmapRoute: AuthenticatedRoadmapRouteWithChildren,
+  AuthenticatedRoadmapGradeRoute: AuthenticatedRoadmapGradeRoute,
+  AuthenticatedRoadmapIndexRoute: AuthenticatedRoadmapIndexRoute,
+  AuthenticatedRoadmapItemItemIdRoute: AuthenticatedRoadmapItemItemIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
