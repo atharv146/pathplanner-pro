@@ -1,5 +1,6 @@
-import { createFileRoute, Outlet, redirect, useMatchRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, useMatchRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/bottom-nav";
 
@@ -17,6 +18,7 @@ function AuthedLayout() {
   const { userId } = Route.useRouteContext();
   const matchRoute = useMatchRoute();
   const onOnboarding = !!matchRoute({ to: "/onboarding" });
+  const navigate = useNavigate();
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile", userId],
@@ -27,16 +29,18 @@ function AuthedLayout() {
     },
   });
 
-  if (isLoading) {
+  const needsOnboarding = profile && !profile.onboarding_complete;
+
+  useEffect(() => {
+    if (needsOnboarding && !onOnboarding) {
+      navigate({ to: "/onboarding", replace: true });
+    }
+  }, [needsOnboarding, onOnboarding, navigate]);
+
+  if (isLoading || (needsOnboarding && !onOnboarding)) {
     return (
       <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading…</div>
     );
-  }
-
-  const needsOnboarding = profile && !profile.onboarding_complete;
-
-  if (needsOnboarding && !onOnboarding) {
-    throw redirect({ to: "/onboarding" });
   }
 
   return (
