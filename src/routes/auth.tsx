@@ -38,6 +38,11 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "signup") {
+        if (password.length < 7 || !/\d/.test(password)) {
+          toast.error("Password must be at least 7 characters and include a number.");
+          setLoading(false);
+          return;
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -128,7 +133,10 @@ function AuthPage() {
               </div>
               <div>
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1.5 h-11 rounded-xl" required minLength={6} />
+                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1.5 h-11 rounded-xl" required minLength={mode === "signup" ? 7 : undefined} pattern={mode === "signup" ? "(?=.*\\d).{7,}" : undefined} title="At least 7 characters and include a number" />
+                {mode === "signup" && (
+                  <p className="text-xs text-muted-foreground mt-1.5">At least 7 characters and include a number.</p>
+                )}
               </div>
               <Button type="submit" disabled={loading} className="w-full h-12 rounded-xl text-base font-semibold">
                 {loading ? "…" : mode === "signup" ? "Create account" : "Sign in"}
