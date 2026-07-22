@@ -14,6 +14,8 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRoadmapRouteImport } from './routes/_authenticated/roadmap'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedGuideRouteImport } from './routes/_authenticated/guide'
+import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as AuthenticatedRoadmapItemIdRouteImport } from './routes/_authenticated/roadmap.$itemId'
 
 const AuthRoute = AuthRouteImport.update({
@@ -40,6 +42,16 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedGuideRoute = AuthenticatedGuideRouteImport.update({
+  id: '/guide',
+  path: '/guide',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedRoadmapItemIdRoute =
   AuthenticatedRoadmapItemIdRouteImport.update({
     id: '/$itemId',
@@ -50,6 +62,8 @@ const AuthenticatedRoadmapItemIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/chat': typeof AuthenticatedChatRoute
+  '/guide': typeof AuthenticatedGuideRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/roadmap': typeof AuthenticatedRoadmapRouteWithChildren
   '/roadmap/$itemId': typeof AuthenticatedRoadmapItemIdRoute
@@ -57,6 +71,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/chat': typeof AuthenticatedChatRoute
+  '/guide': typeof AuthenticatedGuideRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/roadmap': typeof AuthenticatedRoadmapRouteWithChildren
   '/roadmap/$itemId': typeof AuthenticatedRoadmapItemIdRoute
@@ -66,20 +82,38 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/chat': typeof AuthenticatedChatRoute
+  '/_authenticated/guide': typeof AuthenticatedGuideRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/roadmap': typeof AuthenticatedRoadmapRouteWithChildren
   '/_authenticated/roadmap/$itemId': typeof AuthenticatedRoadmapItemIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/onboarding' | '/roadmap' | '/roadmap/$itemId'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/chat'
+    | '/guide'
+    | '/onboarding'
+    | '/roadmap'
+    | '/roadmap/$itemId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/onboarding' | '/roadmap' | '/roadmap/$itemId'
+  to:
+    | '/'
+    | '/auth'
+    | '/chat'
+    | '/guide'
+    | '/onboarding'
+    | '/roadmap'
+    | '/roadmap/$itemId'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/chat'
+    | '/_authenticated/guide'
     | '/_authenticated/onboarding'
     | '/_authenticated/roadmap'
     | '/_authenticated/roadmap/$itemId'
@@ -128,6 +162,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/guide': {
+      id: '/_authenticated/guide'
+      path: '/guide'
+      fullPath: '/guide'
+      preLoaderRoute: typeof AuthenticatedGuideRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/chat': {
+      id: '/_authenticated/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof AuthenticatedChatRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/roadmap/$itemId': {
       id: '/_authenticated/roadmap/$itemId'
       path: '/$itemId'
@@ -150,11 +198,15 @@ const AuthenticatedRoadmapRouteWithChildren =
   AuthenticatedRoadmapRoute._addFileChildren(AuthenticatedRoadmapRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedChatRoute: typeof AuthenticatedChatRoute
+  AuthenticatedGuideRoute: typeof AuthenticatedGuideRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedRoadmapRoute: typeof AuthenticatedRoadmapRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedChatRoute: AuthenticatedChatRoute,
+  AuthenticatedGuideRoute: AuthenticatedGuideRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedRoadmapRoute: AuthenticatedRoadmapRouteWithChildren,
 }
