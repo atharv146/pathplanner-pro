@@ -14,7 +14,170 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      articles: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          id: string
+          published: boolean
+          read_minutes: number
+          summary: string
+          title: string
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          id?: string
+          published?: boolean
+          read_minutes?: number
+          summary: string
+          title: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          published?: boolean
+          read_minutes?: number
+          summary?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          account_type: Database["public"]["Enums"]["account_type"]
+          created_at: string
+          extracurriculars: string | null
+          first_gen: boolean | null
+          full_name: string | null
+          gpa: number | null
+          grade_level: number | null
+          id: string
+          immigration_status: string | null
+          onboarding_complete: boolean
+          target_college: string | null
+          target_major: string | null
+          test_scores: string | null
+          undecided: boolean
+          updated_at: string
+        }
+        Insert: {
+          account_type?: Database["public"]["Enums"]["account_type"]
+          created_at?: string
+          extracurriculars?: string | null
+          first_gen?: boolean | null
+          full_name?: string | null
+          gpa?: number | null
+          grade_level?: number | null
+          id: string
+          immigration_status?: string | null
+          onboarding_complete?: boolean
+          target_college?: string | null
+          target_major?: string | null
+          test_scores?: string | null
+          undecided?: boolean
+          updated_at?: string
+        }
+        Update: {
+          account_type?: Database["public"]["Enums"]["account_type"]
+          created_at?: string
+          extracurriculars?: string | null
+          first_gen?: boolean | null
+          full_name?: string | null
+          gpa?: number | null
+          grade_level?: number | null
+          id?: string
+          immigration_status?: string | null
+          onboarding_complete?: boolean
+          target_college?: string | null
+          target_major?: string | null
+          test_scores?: string | null
+          undecided?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      roadmap_items: {
+        Row: {
+          category: string
+          description: string
+          grade: number
+          id: string
+          order_index: number
+          title: string
+        }
+        Insert: {
+          category: string
+          description: string
+          grade: number
+          id?: string
+          order_index?: number
+          title: string
+        }
+        Update: {
+          category?: string
+          description?: string
+          grade?: number
+          id?: string
+          order_index?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      user_progress: {
+        Row: {
+          completed_at: string
+          item_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          item_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          item_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_progress_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "roadmap_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +186,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      account_type: "student" | "parent"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +313,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      account_type: ["student", "parent"],
+    },
   },
 } as const
