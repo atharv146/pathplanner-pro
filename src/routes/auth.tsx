@@ -32,6 +32,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,7 +44,7 @@ function AuthPage() {
           setLoading(false);
           return;
         }
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -52,8 +53,13 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Account created. Welcome!");
-        navigate({ to: "/onboarding" });
+        if (data.session) {
+          toast.success("Account created. Welcome!");
+          navigate({ to: "/onboarding" });
+        } else {
+          setPendingEmail(email);
+          toast.success("Check your email to confirm your account.");
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -91,6 +97,23 @@ function AuthPage() {
           </div>
 
           <div className="bg-card rounded-3xl p-6 shadow-xl shadow-primary/5 border border-border">
+            {pendingEmail ? (
+              <div className="text-center py-4 space-y-3">
+                <h2 className="text-xl font-bold">Confirm your email</h2>
+                <p className="text-sm text-muted-foreground">
+                  We sent a confirmation link to <span className="font-semibold text-foreground">{pendingEmail}</span>.
+                  Click it to activate your account, then come back to sign in.
+                </p>
+                <Button
+                  variant="outline"
+                  className="w-full h-11 rounded-xl"
+                  onClick={() => { setPendingEmail(null); setMode("signin"); }}
+                >
+                  Back to sign in
+                </Button>
+              </div>
+            ) : (
+            <>
             <Tabs value={mode} onValueChange={(v) => setMode(v as "signin" | "signup")}>
               <TabsList className="grid grid-cols-2 w-full mb-6 rounded-full h-11 p-1">
                 <TabsTrigger value="signin" className="rounded-full">Sign in</TabsTrigger>
@@ -152,6 +175,8 @@ function AuthPage() {
             <Button variant="outline" onClick={google} className="w-full h-12 rounded-xl font-medium">
               Continue with Google
             </Button>
+            </>
+            )}
           </div>
         </div>
       </div>
