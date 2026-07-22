@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet, redirect, useMatchRoute, useNavigate } from "@tanstack/react-router";
+void redirect;
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
